@@ -1,5 +1,7 @@
 distributable:
   # TODO: add jdk8
+  - url: https://github.com/openjdk/jdk23u/archive/{{version.tag}}.tar.gz
+    strip-components: 1
   - url: https://github.com/openjdk/jdk21u/archive/{{version.tag}}.tar.gz
     strip-components: 1
   - url: https://github.com/openjdk/jdk17u/archive/{{version.tag}}.tar.gz
@@ -11,6 +13,8 @@ versions:
   # each repo contains all the prior repo tags at the time of the fork,
   # as well as tags like 21+10, which should be 21.0.0.10, but parses to
   # 21.10.0.
+  - github: openjdk/jdk23u/tags
+    transform: 'v => v.match(/jdk-23\.0\./) ? v.replace(/\+/, ".").replace(/^jdk-/, "") : undefined'
   - github: openjdk/jdk21u/tags
     transform: 'v => v.match(/jdk-21\.0\./) ? v.replace(/\+/, ".").replace(/^jdk-/, "") : undefined'
   - github: openjdk/jdk17u/tags
@@ -80,6 +84,8 @@ build:
           unset LLVM_VERSION_MAJOR LLVM_BIN_PATH PATH_WITHOUT_.LLVM
         fi
       if: <12
+    - run: patch -p1 <props/v23.0.1.patch
+      if: 23.0.1.11
     - bash configure $ARGS
       --with-boot-jdk="$BOOT_JDK_DIR"
       --with-version-build=$(echo {{version.raw}} | grep -o '[0-9]\+$')
@@ -128,6 +134,8 @@ build:
 
     # the boot jdk should point to the last version of the previous major version
     # or the last previous version of the current major version
+    # https://github.com/adoptium/temurin23-binaries/releases
+    BOOT_JDK23_VERSION: 23.0.1+11
     # https://github.com/adoptium/temurin21-binaries/releases
     BOOT_JDK21_VERSION: 21.0.2+13
     # https://github.com/adoptium/temurin17-binaries/releases
